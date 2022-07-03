@@ -18,9 +18,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+        'isAdmin'
     ];
 
     /**
@@ -32,13 +33,14 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+ 
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public function cart(){
+        return $this->hasOne('App/Models/Cart');
+    }
+
+    public function orders(){
+        return $this->hasMany('App/Models/Order');
+    }
+
 }
