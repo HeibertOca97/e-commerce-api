@@ -18,8 +18,8 @@ class AuthTest extends TestCase
             'email' => $this->faker->unique()->safeEmail(),
             'password' => $this->faker->password(1, 5)
         ];
-        $response = $this->postJson('/api/v1/auth/register', $requests);
-        $response->assertStatus(422);
+        $responseRegister = $this->postJson('/api/v1/auth/register', $requests);
+        $responseRegister->assertStatus(422);
     }
 
     /** @test */
@@ -30,7 +30,7 @@ class AuthTest extends TestCase
             'email' => $this->faker->unique()->safeEmail(),
             'password' => $this->faker->password(6, 20)
         ];
-        $response = $this->postJson('/api/v1/auth/register', $requests);
+        $responseRegister = $this->postJson('/api/v1/auth/register', $requests);
         // checked if exist that register in the database
         $this->assertDatabaseCount('users', 1);
         // checked if it has that data
@@ -38,7 +38,7 @@ class AuthTest extends TestCase
             'username' => $requests['username']
         ]);
         // created a new user successfully.
-        $response->assertCreated(); 
+        $responseRegister->assertCreated(); 
     }
 
     /** @test */
@@ -47,8 +47,8 @@ class AuthTest extends TestCase
             'username' => $this->faker->unique()->userName,
             'password' => ''
         ];
-        $response = $this->postJson('/api/v1/auth/login', $requests);
-        $response->assertStatus(422);
+        $responseLogin = $this->postJson('/api/v1/auth/login', $requests);
+        $responseLogin->assertStatus(422);
     }
 
     /** @test */
@@ -61,25 +61,20 @@ class AuthTest extends TestCase
         /***** 
          * CREATING USER 
         *****/
-        $response = $this->postJson('/api/v1/auth/register', $requests);
+        $responseRegister = $this->postJson('/api/v1/auth/register', $requests);
         // checked if exist that register in the database
-        $this->assertDatabaseCount('users', 1);
-        // checked if it has that data
-        $this->assertDatabaseHas('users', [
-            'username' => $requests['username'],
-            'isAdmin' => 1
-        ]);
+        $this->assertDatabaseCount('users', 1); 
         // created a new user successfully.
-        $response->assertCreated();
+        $responseRegister->assertCreated();
 
         /***** 
          * LOGIN USER
         *****/ 
-        $response2 = $this->postJson('/api/v1/auth/login', [
+        $responseLogin = $this->postJson('/api/v1/auth/login', [
             'username' => $requests['username'],
             'password' => $requests['password'] . '123'
         ]);
-        $response2->assertUnauthorized();
+        $responseLogin->assertNotFound();
     }
 
     /** @test */
@@ -92,26 +87,20 @@ class AuthTest extends TestCase
         /***** 
          * CREATING USER 
          *****/
-        $response = $this->postJson('/api/v1/auth/register', $requests);
+        $responseRegister = $this->postJson('/api/v1/auth/register', $requests);
         // checked if exist that register in the database
-        $this->assertDatabaseCount('users', 1);
-        // checked if it has that data
-        $this->assertDatabaseHas('users', [
-            'username' => $requests['username'],
-            'isAdmin' => 1
-        ]);
+        $this->assertDatabaseCount('users', 1); 
         // created a new user successfully.
-        $response->assertCreated();
+        $responseRegister->assertCreated();
 
         /***** 
          * LOGIN USER
          *****/ 
-        $response2 = $this->postJson('/api/v1/auth/login', [
+        $responseLogin = $this->postJson('/api/v1/auth/login', [
             'username' => $requests['username'],
             'password' => $requests['password']
         ]);
-        //dd($response2);
-        $response2->assertOk();
+        $responseLogin->assertOk();
     }
 
 }

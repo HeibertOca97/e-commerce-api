@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,14 +30,18 @@ class AuthController extends Controller
             if(User::all()->count() < 1){
                 $request['isAdmin'] = 1;
             }
+
             $request['password'] = Hash::make($request->password);
-            $response = User::create($request->all());
+
+            User::create($request->all());
 
             return response([
                 'success' => true,
-                'data' => $response 
+                'message' => 'User created successfully.' 
             ], Response::HTTP_CREATED); //201
+
         }catch(\Throwable $err){
+
             return response([
                 'success' => false,
                 'error' => $err->getMessage()
@@ -63,17 +68,24 @@ class AuthController extends Controller
             return response([
                 'success' => false,
                 'error' => 'Wrong credentials!',
-            ], Response::HTTP_UNAUTHORIZED); // 401
+            ], Response::HTTP_NOT_FOUND); // 401 o 404
         }        
-        
-        $collection = collect($user);
-        $token = $user->createToken(env('JWT_SECRET_KEY'));
-        $data = $collection->merge(['token' => $token->plainTextToken]);
 
+        $data = $user->createAndReturnToken($user);
 
         return response([
             'success' => true,
-            'data' => $data->all(), 
+            'data' => $data 
+        ], Response::HTTP_OK);
+    }
+
+    public function logout(Request $request){        
+        $token_id = $request->token_id;
+        Auth::user()->tokens()->where('id', $token_id)->delete();
+
+        return response([
+            'success' => true,
+            'message' => 'Session successfully revoked',
         ], Response::HTTP_OK);
 
     }

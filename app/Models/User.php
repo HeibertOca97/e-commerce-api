@@ -33,7 +33,17 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
- 
+
+    public function createAndReturnToken($user){
+        $currentDate = date('Y-m-d H:i:s');
+        $new_timer = strtotime('+'. config('sanctum.expiration') .'minute', strtotime($currentDate));
+        $date =  date('Y-m-d H:i:s', $new_timer);
+        $token = $user->createToken(strtotime($currentDate))->plainTextToken;
+        return [
+            'token' => $token,
+            'expiration' => $date
+        ];
+    }
 
     public function cart(){
         return $this->hasOne('App/Models/Cart');
